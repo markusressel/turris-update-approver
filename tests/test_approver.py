@@ -285,6 +285,16 @@ class ServeTest(unittest.TestCase):
         tua.serve(approver, approver.telegram, 300, sleep=slept.append, rounds=3)
         self.assertEqual(slept, [60, 60, 60])
 
+    def test_timeouts_poll_again_without_waiting(self):
+        class Slow(FakeTelegram):
+            def call(self, method, http_timeout=30, **params):
+                raise TimeoutError("The read operation timed out")
+        slept = []
+        approver = tua.Approver(FakeTelegram(), FakeApprovals(), CHAT, "turris",
+                                os.devnull + ".x", start_updater=lambda: None)
+        tua.serve(approver, Slow(), 300, sleep=slept.append, rounds=3)
+        self.assertEqual(slept, [])
+
 
 class ConfigTest(unittest.TestCase):
 

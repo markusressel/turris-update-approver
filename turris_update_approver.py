@@ -51,7 +51,7 @@ class Telegram:
         request = urllib.request.Request(self._base + method, data=data,
                                          headers={"Content-Type": "application/json"})
         try:
-            with urllib.request.urlopen(request, timeout=http_timeout + 10) as response:
+            with urllib.request.urlopen(request, timeout=http_timeout + 30) as response:
                 body = json.load(response)
         except urllib.error.HTTPError as e:
             try:
@@ -298,6 +298,9 @@ def serve(approver, telegram, check_interval, sleep=time.sleep, clock=time.monot
             for update in telegram.call("getUpdates", http_timeout=wait, **params):
                 offset = update["update_id"] + 1
                 approver.handle_update(update)
+        except TimeoutError as e:
+            # A long poll that got no answer in time. Nothing is lost, poll again right away.
+            LOG.warning("Telegram did not answer in time (%s), polling again", e)
         except (TelegramError, OSError, ValueError) as e:
             # No internet yet after a boot, or Telegram is down: try again later.
             LOG.warning("%s, retrying in 60 s", e)

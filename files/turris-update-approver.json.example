@@ -1,0 +1,6 @@
+{
+  "token": "123456789:replace-with-the-token-from-BotFather",
+  "chat_id": 123456789,
+  "check_interval": 300,
+  "run_after_approve": true
+}
